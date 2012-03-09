@@ -1,5 +1,5 @@
 /**
- * @author und <a.d.laptev@gmail.com>
+ * @author agsh <a.d.laptev@gmail.com>
  */
 
 /**
@@ -43,6 +43,13 @@ cam.machine.prototype.execOnce = function() {
 	}
 };
 
+cam.machine.prototype.exec = function() {
+    while (this.code.length > 0) {
+        this.execOnce();
+    }
+    return this.showTerm();
+};
+
 cam.machine.prototype.push = function() {
 	this.stack.unshift(_.clone(this.term));
 };
@@ -84,7 +91,7 @@ cam.machine.prototype.app = function() {
 	} else {
 		this.error("uncondition term for app instruction");
 	}
-}
+};
 
 cam.machine.prototype.cons = function() {
 	this.term = {value: "", left: this.stack.shift(), right: this.term}
