@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+	<script type="text/javascript" src="underscore.js"></script>
+	<script type="text/javascript" src="cam.js"></script>
+	<script type="text/javascript" src="lambda.js"></script>
+	<script type="text/javascript">
+		lambda_dbg_withtrace = true;
+		var c = new cam.machine({
+			/*code: [
+				{name: "push"},
+				{name: "quote", quoted: "2"},
+				{name: "swap"},
+				{name: "quote", quoted: "3"},
+				{name: "cons"},
+				{name: "add"}
+				]*/
+			code: [
+				{name: "push"},
+				{name: "cur", curried: [{name: "cdr"}]},
+				{name: "swap"},
+				{name: "quote", quoted: "2"},
+				{name: "cons"},
+				{name: "app"}
+			]
+		});
+	</script>
+	<button onclick="c.execOnce(); document.getElementById('camtext').innerHTML += c.show()+'<br>';">exec One</button>
+	<button onclick="alert(__lambdaparse('a = 2;'))">calc</button>
+	<div id="camtext"></div>
+</body>
+</html>
