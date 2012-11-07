@@ -2,6 +2,7 @@ Categorical Abstract Machine implementation in javascript.
 
 Sample program:
 
+``` javascript
 var c = new cam.machine({
 	code: [
 		{name: "push"},
@@ -12,5 +13,6 @@ var c = new cam.machine({
 		{name: "add"}
 	]
 });
+```
 
 console.log(c.exec()); // 5
