@@ -1,5 +1,7 @@
 ##Categorical Abstract Machine implementation in javascript.
 
+[![Coverage Status](https://coveralls.io/repos/agsh/CAM/badge.png)](https://coveralls.io/r/agsh/CAM)
+
 Sample program:
 
 ```javascript
