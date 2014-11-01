@@ -1,34 +1,67 @@
 /**
- * @author agsh <a.d.laptev@gmail.com>
+ * @author Andrew D.Laptev <a.d.laptev@gmail.com>
  */
+
+// attach lodash
+var _;
+if (typeof _ === 'undefined') {
+	_ = require('lodash');
+}
 
 /**
  * CAM namespace
  * @namespace cam
  */
-var cam = {};
+var cam = {
+
+};
+
+/**
+ * Categorical abstract machine term class
+ * @param obj
+ * @constructor
+ */
+cam.Term = function(obj) {
+	this.value = obj ? obj.value || '' : '';
+	if (obj) {
+		if (obj.left) this.left = obj.left;
+		if (obj.right) this.right = obj.right;
+		if (obj.delimiter) this.delimiter = obj.delimiter;
+	}
+};
+var Term = cam.Term;
+
+Term.prototype.clone = function() {
+	return new Term({
+		value: this.value
+		, left: this.left
+		, right: this.right
+	})
+};
 
 /**
  * Categorical abstract machine class
  * @constructor
  * @param params parameters
  */
-cam.machine = function(params) {
+cam.Machine = function(params) {
 	/**Machine name*/
-	this.name = params.name || "default";
+	this.name = params.name || 'default';
 	this.code = params.code || [];
 	this.stack = [];
-	this.term = {value: ""};
+	//this.term = {value: ""};
+	this.term = new Term();
 };
 
-cam.machine.prototype.error = function(text) {
-	console.log("Error: " + text + "!");
+cam.Machine.prototype.error = function(text) {
+	throw new Error(text);
+	// console.log("Error: " + text + "!");
 };
 
-cam.machine.prototype.execOnce = function() {
+cam.Machine.prototype.execOnce = function() {
 	if (this.code.length > 0) {
-		var cmd = this.code.shift(); // вместо pop
-		console.log(cmd.name);
+		var cmd = this.code.shift();
+		// console.log(cmd.name);
 		if (this[cmd.name]) {
 			try {
 				this[cmd.name](cmd);
@@ -36,84 +69,92 @@ cam.machine.prototype.execOnce = function() {
 				this.error(e);
 			}
 		} else {
-			this.error(cmd.name + " - unexcepted cam command");
+			this.error(cmd.name + ' - unexcepted cam command');
 		}
 	} else {
-		this.error("code is empty");
+		this.error('code is empty');
 	}
 };
 
-cam.machine.prototype.exec = function() {
+cam.Machine.prototype.exec = function() {
     while (this.code.length > 0) {
         this.execOnce();
     }
     return this.showTerm();
 };
 
-cam.machine.prototype.push = function() {
-	this.stack.unshift(_.clone(this.term));
+cam.Machine.prototype.push = function() {
+	this.stack.unshift(this.term.clone());
 };
 
-cam.machine.prototype.quote = function(env) {
+cam.Machine.prototype.quote = function(env) {
 	if (env.quoted) {
-		this.term = {value: env.quoted};
+		this.term = new Term({value: env.quoted});
 	} else {
-		this.error("there is no quoted mark in quote instruction");
+		this.error('there is no quoted mark in quote instruction');
 	}
 };
 
-cam.machine.prototype.swap = function() {
+cam.Machine.prototype.swap = function() {
 	var tmpLink = this.stack.shift();
 	this.stack.unshift(this.term);
 	this.term = tmpLink;
 };
 
-cam.machine.prototype.car = function() {
-	this.term = this.term.left;
+cam.Machine.prototype.car = function() {
+	if (this.term.left) {
+		this.term = this.term.left;
+	} else {
+		this.error('Wrong term construction for car command');
+	}
 };
 
-cam.machine.prototype.cdr = function() {
-	this.term = this.term.right;
+cam.Machine.prototype.cdr = function() {
+	if (this.term.right) {
+		this.term = this.term.right;
+	} else {
+		this.error('Wrong term construction for car command');
+	}
 };
 
-cam.machine.prototype.cur = function(env) {
+cam.Machine.prototype.cur = function(env) {
 	if (env.curried) {
-		this.term = {value: "", delimiter: ":", left: env.curried, right: this.term};
+		this.term = new Term({value: "", delimiter: ":", left: env.curried, right: this.term});
 	} else {
 		this.error("there is nothing curried mark in cur instruction");
 	}
 };
 
-cam.machine.prototype.app = function() {
+cam.Machine.prototype.app = function() {
 	if (this.term.left && (this.term.left.delimiter === ":") && this.term.left.left && this.term.left.right && this.term.right) {
 		this.code = this.term.left.left.concat(this.code);
 		this.term = {value: this.term.value, left: this.term.left.right, right: this.term.right};
 	} else {
-		this.error("uncondition term for app instruction");
+		this.error('Wrong term for app instruction');
 	}
 };
 
-cam.machine.prototype.cons = function() {
+cam.Machine.prototype.cons = function() {
 	this.term = {value: "", left: this.stack.shift(), right: this.term}
 };
 
-cam.machine.prototype.add = function() {
+cam.Machine.prototype.add = function() {
 	this.term = {value: parseInt(this.term.left.value, 10) + parseInt(this.term.right.value, 10)};
 };
 
-cam.machine.prototype.show = function() {
+cam.Machine.prototype.show = function() {
 	return this.showTerm() + "| " + this.showCode() + "| " + this.showStack();
 };
 
-cam.machine.prototype.showCode = function() {
+cam.Machine.prototype.showCode = function() {
 	return _.reduce(this.code, function(acc, cmd) {return acc + " " + cmd.name + (cmd.quoted?"("+cmd.quoted+")":"")}, "");
 };
 
-cam.machine.prototype.showStack = function() {
+cam.Machine.prototype.showStack = function() {
 	return _.reduce(this.stack, function(acc, term) {return acc + " " + cam.termShow(term)}, "");
 };
 
-cam.machine.prototype.showTerm = function() {
+cam.Machine.prototype.showTerm = function() {
 	return cam.termShow(this.term);
 };
 
@@ -131,3 +172,10 @@ cam.termShow = function(term) {
 	s += ")";
 	return s;
 };
+
+if (typeof exports !== 'undefined') {
+	if (typeof module !== 'undefined' && module.exports) {
+		exports = module.exports = cam;
+	}
+	exports.cam = cam;
+}
