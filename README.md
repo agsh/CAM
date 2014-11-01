@@ -1,4 +1,4 @@
-Categorical Abstract Machine implementation in javascript.
+##Categorical Abstract Machine implementation in javascript.
 
 Sample program:
 
