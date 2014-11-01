@@ -2,10 +2,15 @@
   "name": "CAM",
   "version": "0.0.1",
   "author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
+  "repository": "git://github.com/agsh/CAM",
   "devDependencies": {
     "mocha": "*"
   },
   "scripts": {
     "test": "mocha test"
+  },
+  "dependencies": {
+    "coveralls": "^2.11.2",
+    "mocha-lcov-reporter": "0.0.1"
   }
 }
