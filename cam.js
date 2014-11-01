@@ -22,15 +22,38 @@ var cam = {
  * @constructor
  */
 cam.Term = function(obj) {
+	/**
+	 * Term value
+	 * @type {string}
+	 */
 	this.value = obj ? obj.value || '' : '';
 	if (obj) {
-		if (obj.left) this.left = obj.left;
-		if (obj.right) this.right = obj.right;
-		if (obj.delimiter) this.delimiter = obj.delimiter;
+		if (obj.left)
+			/**
+			 * Left part
+			 * @type {cam.Term|null}
+			 */
+			this.left = obj.left;
+		if (obj.right)
+			/**
+			 * Right part
+			 * @type {cam.Term|null}
+			 */
+			this.right = obj.right;
+		if (obj.delimiter)
+			/**
+			 * Delimiter for term. Default is comma, colon for curried construction
+			 * @type {string}
+			 */
+			this.delimiter = obj.delimiter;
 	}
 };
 var Term = cam.Term;
 
+/**
+ * Clone a term
+ * @returns {Term}
+ */
 Term.prototype.clone = function() {
 	return new Term({
 		value: this.value
@@ -49,13 +72,11 @@ cam.Machine = function(params) {
 	this.name = params.name || 'default';
 	this.code = params.code || [];
 	this.stack = [];
-	//this.term = {value: ""};
 	this.term = new Term();
 };
 
 cam.Machine.prototype.error = function(text) {
 	throw new Error(text);
-	// console.log("Error: " + text + "!");
 };
 
 cam.Machine.prototype.execOnce = function() {
@@ -119,7 +140,7 @@ cam.Machine.prototype.cdr = function() {
 
 cam.Machine.prototype.cur = function(env) {
 	if (env.curried) {
-		this.term = new Term({value: "", delimiter: ":", left: env.curried, right: this.term});
+		this.term = new Term({value: '', delimiter: ':', left: env.curried, right: this.term});
 	} else {
 		this.error("there is nothing curried mark in cur instruction");
 	}
@@ -128,30 +149,32 @@ cam.Machine.prototype.cur = function(env) {
 cam.Machine.prototype.app = function() {
 	if (this.term.left && (this.term.left.delimiter === ":") && this.term.left.left && this.term.left.right && this.term.right) {
 		this.code = this.term.left.left.concat(this.code);
-		this.term = {value: this.term.value, left: this.term.left.right, right: this.term.right};
+		this.term = new Term({value: this.term.value, left: this.term.left.right, right: this.term.right});
 	} else {
 		this.error('Wrong term for app instruction');
 	}
 };
 
 cam.Machine.prototype.cons = function() {
-	this.term = {value: "", left: this.stack.shift(), right: this.term}
+	this.term = new Term({value: '', left: this.stack.shift(), right: this.term});
 };
 
 cam.Machine.prototype.add = function() {
-	this.term = {value: parseInt(this.term.left.value, 10) + parseInt(this.term.right.value, 10)};
+	this.term = new Term({value: parseInt(this.term.left.value, 10) + parseInt(this.term.right.value, 10)});
 };
 
 cam.Machine.prototype.show = function() {
-	return this.showTerm() + "| " + this.showCode() + "| " + this.showStack();
+	return this.showTerm() + '\t|\t' + this.showCode() + '\t|\t' + this.showStack();
 };
 
 cam.Machine.prototype.showCode = function() {
-	return _.reduce(this.code, function(acc, cmd) {return acc + " " + cmd.name + (cmd.quoted?"("+cmd.quoted+")":"")}, "");
+	return _.reduce(this.code
+		, function(acc, cmd) {return acc + ' ' + cmd.name + (cmd.quoted ? '(' + cmd.quoted + ')' : '')}, ''
+	);
 };
 
 cam.Machine.prototype.showStack = function() {
-	return _.reduce(this.stack, function(acc, term) {return acc + " " + cam.termShow(term)}, "");
+	return _.reduce(this.stack, function(acc, term) {return acc + ' ' + cam.termShow(term)}, '');
 };
 
 cam.Machine.prototype.showTerm = function() {
@@ -159,17 +182,17 @@ cam.Machine.prototype.showTerm = function() {
 };
 
 cam.termShow = function(term) {
-	var s = "(";
+	var s = '(';
 	if (term.left) {
-		s += cam.termShow(term.left) + ", ";
+		s += cam.termShow(term.left) + ', ';
 	}
 	if (term.value) {
 		s += term.value;
 	}
 	if (term.right) {
-		s += ", " + cam.termShow(term.right);
+		s += ', ' + cam.termShow(term.right);
 	}
-	s += ")";
+	s += ')';
 	return s;
 };
 
