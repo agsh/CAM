@@ -4,7 +4,8 @@
   "author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
   "repository": "git://github.com/agsh/CAM",
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "*",
+    "grunt": "*"
   },
   "scripts": {
     "test": "mocha test"
